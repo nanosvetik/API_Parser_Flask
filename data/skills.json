@@ -1,0 +1,110 @@
+[
+    {
+        "skill": "Тестирование",
+        "count": 6
+    },
+    {
+        "skill": "QA",
+        "count": 3
+    },
+    {
+        "skill": "Test case",
+        "count": 3
+    },
+    {
+        "skill": "Ручное тестирование",
+        "count": 3
+    },
+    {
+        "skill": "Проведение тестирований",
+        "count": 2
+    },
+    {
+        "skill": "DevTools",
+        "count": 2
+    },
+    {
+        "skill": "Тестирование ПО",
+        "count": 2
+    },
+    {
+        "skill": "Тестирование игр",
+        "count": 2
+    },
+    {
+        "skill": "GameDev",
+        "count": 2
+    },
+    {
+        "skill": "Контроль качества",
+        "count": 2
+    },
+    {
+        "skill": "Кроссплатформенное тестирование",
+        "count": 1
+    },
+    {
+        "skill": "Кроссбраузерное тестирование",
+        "count": 1
+    },
+    {
+        "skill": "Bug Reporting",
+        "count": 1
+    },
+    {
+        "skill": "Английский язык",
+        "count": 1
+    },
+    {
+        "skill": "Пользователь ПК",
+        "count": 1
+    },
+    {
+        "skill": "Поиск информации в интернет",
+        "count": 1
+    },
+    {
+        "skill": "Internet",
+        "count": 1
+    },
+    {
+        "skill": "CI/CD",
+        "count": 1
+    },
+    {
+        "skill": "Gitlab",
+        "count": 1
+    },
+    {
+        "skill": "Docker",
+        "count": 1
+    },
+    {
+        "skill": "Postman",
+        "count": 1
+    },
+    {
+        "skill": "Selenium",
+        "count": 1
+    },
+    {
+        "skill": "API",
+        "count": 1
+    },
+    {
+        "skill": "Техническая поддержка",
+        "count": 1
+    },
+    {
+        "skill": "Информационные технологии",
+        "count": 1
+    },
+    {
+        "skill": "OAT-тестирование",
+        "count": 1
+    },
+    {
+        "skill": "Аналитический склад ума",
+        "count": 1
+    }
+]
