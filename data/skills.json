@@ -4,15 +4,19 @@
         "count": 6
     },
     {
+        "skill": "Ручное тестирование",
+        "count": 5
+    },
+    {
+        "skill": "Test case",
+        "count": 5
+    },
+    {
         "skill": "QA",
         "count": 3
     },
     {
-        "skill": "Test case",
-        "count": 3
-    },
-    {
-        "skill": "Ручное тестирование",
+        "skill": "API",
         "count": 3
     },
     {
@@ -24,20 +28,68 @@
         "count": 2
     },
     {
-        "skill": "Тестирование ПО",
+        "skill": "HTML",
         "count": 2
+    },
+    {
+        "skill": "CSS",
+        "count": 2
+    },
+    {
+        "skill": "Поиск информации в интернет",
+        "count": 2
+    },
+    {
+        "skill": "Internet",
+        "count": 2
+    },
+    {
+        "skill": "Функциональное тестирование",
+        "count": 2
+    },
+    {
+        "skill": "Postman",
+        "count": 2
+    },
+    {
+        "skill": "Selenium",
+        "count": 2
+    },
+    {
+        "skill": "JavaScript",
+        "count": 1
+    },
+    {
+        "skill": "SEO",
+        "count": 1
+    },
+    {
+        "skill": "Пользователь ПК",
+        "count": 1
+    },
+    {
+        "skill": "Грамотная речь",
+        "count": 1
+    },
+    {
+        "skill": "Телефонные переговоры",
+        "count": 1
+    },
+    {
+        "skill": "Электронная почта",
+        "count": 1
     },
     {
         "skill": "Тестирование игр",
-        "count": 2
+        "count": 1
     },
     {
         "skill": "GameDev",
-        "count": 2
+        "count": 1
     },
     {
         "skill": "Контроль качества",
-        "count": 2
+        "count": 1
     },
     {
         "skill": "Кроссплатформенное тестирование",
@@ -52,19 +104,35 @@
         "count": 1
     },
     {
-        "skill": "Английский язык",
+        "skill": "Работа в команде",
         "count": 1
     },
     {
-        "skill": "Пользователь ПК",
+        "skill": "Asana",
         "count": 1
     },
     {
-        "skill": "Поиск информации в интернет",
+        "skill": "SQL",
         "count": 1
     },
     {
-        "skill": "Internet",
+        "skill": "Linux",
+        "count": 1
+    },
+    {
+        "skill": "REST API",
+        "count": 1
+    },
+    {
+        "skill": "Python",
+        "count": 1
+    },
+    {
+        "skill": "Playwright",
+        "count": 1
+    },
+    {
+        "skill": "QA Full-stack",
         "count": 1
     },
     {
@@ -77,34 +145,6 @@
     },
     {
         "skill": "Docker",
-        "count": 1
-    },
-    {
-        "skill": "Postman",
-        "count": 1
-    },
-    {
-        "skill": "Selenium",
-        "count": 1
-    },
-    {
-        "skill": "API",
-        "count": 1
-    },
-    {
-        "skill": "Техническая поддержка",
-        "count": 1
-    },
-    {
-        "skill": "Информационные технологии",
-        "count": 1
-    },
-    {
-        "skill": "OAT-тестирование",
-        "count": 1
-    },
-    {
-        "skill": "Аналитический склад ума",
         "count": 1
     }
 ]

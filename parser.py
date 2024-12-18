@@ -1,6 +1,65 @@
 import requests
 import json
 from collections import Counter
+import sqlite3  # Добавляем библиотеку для работы с SQLite
+
+# Базовый URL API hh.ru
+DOMAIN = 'https://api.hh.ru/'
+URL_VACANCIES = f'{DOMAIN}vacancies'
+
+# Функция для подключения к базе данных
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Функция для сохранения данных в базу данных
+def save_to_database(vacancies):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Сохранение вакансий
+    for vacancy in vacancies:
+        # Получение деталей вакансии
+        vacancy_detail = requests.get(f"{URL_VACANCIES}/{vacancy['id']}").json()
+        key_skills = [skill['name'] for skill in vacancy_detail.get('key_skills', [])]
+
+        # Добавление вакансии в таблицу vacancies
+        cursor.execute('''
+        INSERT INTO vacancies (title, description, url, location, experience, schedule)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            vacancy['name'],
+            vacancy['snippet'].get('responsibility', 'Описание не указано'),
+            vacancy['alternate_url'],
+            vacancy.get('area', {}).get('name', 'Не указано'),
+            vacancy.get('experience', {}).get('name', 'Не указано'),
+            vacancy.get('schedule', {}).get('name', 'Не указано')
+        ))
+
+        # Получение ID добавленной вакансии
+        vacancy_id = cursor.lastrowid
+
+        # Добавление навыков
+        for skill_name in key_skills:
+            # Проверка, существует ли навык в базе данных
+            cursor.execute('SELECT id FROM skills WHERE name = ?', (skill_name,))
+            skill_row = cursor.fetchone()
+
+            if skill_row:
+                # Если навык уже существует, используем его ID
+                skill_id = skill_row[0]
+            else:
+                # Если навыка нет, добавляем его в базу данных
+                cursor.execute('INSERT INTO skills (name) VALUES (?)', (skill_name,))
+                skill_id = cursor.lastrowid
+
+            # Связываем вакансию и навык
+            cursor.execute('INSERT INTO vacancy_skills (vacancy_id, skill_id) VALUES (?, ?)', (vacancy_id, skill_id))
+
+    # Сохранение изменений и закрытие соединения
+    conn.commit()
+    conn.close()
 
 # Базовый URL API hh.ru
 DOMAIN = 'https://api.hh.ru/'
@@ -106,13 +165,14 @@ def save_vacancies_to_json(vacancies):
 
 
 if __name__ == '__main__':
-    # Пример, как бы был вызван парсер
     search_text = 'QA OR "Инженер по тестированию" OR Тестировщик'
     experience = 'noExperience'
     schedule = 'remote'
-    location = 'Москва'  # Пример местоположения, это может быть пустым
+    location = 'Москва'
 
     all_vacancies = fetch_vacancies(search_text, experience, schedule, location)
     filtered_vacancies = filter_vacancies(all_vacancies)
-    save_vacancies_to_json(filtered_vacancies)
-    analyze_and_save_skills(filtered_vacancies)
+
+    # Сохранение данных в базу данных
+    save_to_database(filtered_vacancies)
+    print("Данные успешно сохранены в базу данных!")
