@@ -1,100 +1,83 @@
 from flask import Flask, render_template, request, redirect, url_for
-import json
-import sqlite3  # Добавляем библиотеку для работы с SQLite
-import requests  # Добавляем импорт requests
-from parser import fetch_vacancies, filter_vacancies, save_vacancies_to_json, analyze_and_save_skills
+from models import db, Region, Vacancy, Skill, VacancySkill
+from parser import fetch_vacancies, filter_vacancies
+import requests
 
 app = Flask(__name__)
+
+# Настройка подключения к базе данных с абсолютным путём
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/avemy/PycharmProjects/pythonProject/API_Parser_Flask/myalchemy.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 # Базовый URL API hh.ru
 DOMAIN = 'https://api.hh.ru/'
 URL_VACANCIES = f'{DOMAIN}vacancies'
 
-# Функция для подключения к базе данных
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# Функция для сохранения данных в базу данных
-def save_to_database(vacancies, url_vacancies):
+# Функция для сохранения данных в базу данных через ORM
+def save_to_database(vacancies):
     print("Сохранение данных в базу данных...")  # Отладочное сообщение
-    conn = get_db_connection()
-    cursor = conn.cursor()
 
-    # Сохранение вакансий
     for vacancy in vacancies:
         # Получение деталей вакансии
-        vacancy_detail = requests.get(f"{url_vacancies}/{vacancy['id']}").json()
+        vacancy_detail = fetch_vacancy_detail(vacancy['id'])
         key_skills = [skill['name'] for skill in vacancy_detail.get('key_skills', [])]
 
-        # Добавление вакансии в таблицу vacancies
-        cursor.execute('''
-        INSERT INTO vacancies (title, description, url, location, experience, schedule)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ''', (
-            vacancy['name'],
-            vacancy['snippet'].get('responsibility', 'Описание не указано'),
-            vacancy['alternate_url'],
-            vacancy.get('area', {}).get('name', 'Не указано'),
-            vacancy.get('experience', {}).get('name', 'Не указано'),
-            vacancy.get('schedule', {}).get('name', 'Не указано')
-        ))
+        # Создание или получение региона
+        region = Region.query.filter_by(name=vacancy['area']['name']).first()
+        if not region:
+            region = Region(name=vacancy['area']['name'])
+            db.session.add(region)
 
-        # Получение ID добавленной вакансии
-        vacancy_id = cursor.lastrowid
+        # Создание вакансии
+        new_vacancy = Vacancy(
+            title=vacancy['name'],
+            description=vacancy['snippet'].get('responsibility', 'Описание не указано'),
+            url=vacancy['alternate_url'],
+            location_id=region.id,
+            experience=vacancy['experience']['name'],
+            schedule=vacancy['schedule']['name']
+        )
+        db.session.add(new_vacancy)
+        db.session.commit()  # Коммитим, чтобы получить ID вакансии
 
-        # Добавление навыков
+        # Создание или получение навыков
         for skill_name in key_skills:
-            # Проверка, существует ли навык в базе данных
-            cursor.execute('SELECT id FROM skills WHERE name = ?', (skill_name,))
-            skill_row = cursor.fetchone()
-
-            if skill_row:
-                # Если навык уже существует, используем его ID
-                skill_id = skill_row[0]
-            else:
-                # Если навыка нет, добавляем его в базу данных
-                cursor.execute('INSERT INTO skills (name) VALUES (?)', (skill_name,))
-                skill_id = cursor.lastrowid
+            skill = Skill.query.filter_by(name=skill_name).first()
+            if not skill:
+                skill = Skill(name=skill_name)
+                db.session.add(skill)
+                db.session.commit()  # Коммитим, чтобы получить ID навыка
 
             # Связываем вакансию и навык
-            cursor.execute('INSERT INTO vacancy_skills (vacancy_id, skill_id) VALUES (?, ?)', (vacancy_id, skill_id))
+            db.session.add(VacancySkill(vacancy_id=new_vacancy.id, skill_id=skill.id))
 
-    # Сохранение изменений и закрытие соединения
-    conn.commit()
-    conn.close()
+    # Сохранение изменений
+    db.session.commit()
+    print("Данные успешно сохранены в базу данных!")
 
-    # Вывод данных в консоль
-    print_database_data()
+# Функция для получения деталей вакансии
+def fetch_vacancy_detail(vacancy_id):
+    url = f"{URL_VACANCIES}/{vacancy_id}"
+    response = requests.get(url)
+    return response.json()
 
 # Функция для вывода данных из базы данных в консоль
 def print_database_data():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Вывод данных из таблицы vacancies
     print("\n=== Вакансии ===")
-    cursor.execute("SELECT * FROM vacancies")
-    vacancies = cursor.fetchall()
+    vacancies = Vacancy.query.all()
     for vacancy in vacancies:
-        print(f"ID: {vacancy['id']}, Название: {vacancy['title']}, URL: {vacancy['url']}")
+        print(f"ID: {vacancy.id}, Название: {vacancy.title}, URL: {vacancy.url}")
 
-    # Вывод данных из таблицы skills
     print("\n=== Навыки ===")
-    cursor.execute("SELECT * FROM skills")
-    skills = cursor.fetchall()
+    skills = Skill.query.all()
     for skill in skills:
-        print(f"ID: {skill['id']}, Название: {skill['name']}")
+        print(f"ID: {skill.id}, Название: {skill.name}")
 
-    # Вывод данных из таблицы vacancy_skills
     print("\n=== Связи вакансий и навыков ===")
-    cursor.execute("SELECT * FROM vacancy_skills")
-    vacancy_skills = cursor.fetchall()
+    vacancy_skills = VacancySkill.query.all()
     for vs in vacancy_skills:
-        print(f"Вакансия ID: {vs['vacancy_id']}, Навык ID: {vs['skill_id']}")
-
-    conn.close()
+        print(f"Вакансия ID: {vs.vacancy_id}, Навык ID: {vs.skill_id}")
 
 @app.route('/')
 def index():
@@ -104,10 +87,10 @@ def index():
 def form():
     if request.method == 'POST':
         # Получение данных из формы
-        search_text = request.form.get('jobTitle')  # Используем 'jobTitle' вместо 'text'
-        location = request.form.get('location')     # Получаем 'location' (опционально)
-        experience = request.form.get('experience') # Получаем 'experience'
-        schedule = request.form.get('schedule')     # Получаем 'schedule'
+        search_text = request.form.get('jobTitle')
+        location = request.form.get('location')
+        experience = request.form.get('experience')
+        schedule = request.form.get('schedule')
 
         # Печать полученных данных для проверки
         print(f"Полученные данные: {search_text}, {location}, {experience}, {schedule}")
@@ -118,14 +101,8 @@ def form():
         # Фильтрация вакансий
         filtered_vacancies = filter_vacancies(all_vacancies)
 
-        # Сохранение вакансий в файл
-        save_vacancies_to_json(filtered_vacancies)
-
-        # Анализ и сохранение навыков
-        analyze_and_save_skills(filtered_vacancies)
-
         # Сохранение данных в базу данных
-        save_to_database(filtered_vacancies, URL_VACANCIES)
+        save_to_database(filtered_vacancies)
 
         # После обработки и сохранения данных перенаправляем на страницу результатов
         return redirect(url_for('results'))
@@ -134,13 +111,9 @@ def form():
 
 @app.route('/results', methods=['GET'])
 def results():
-    # Чтение вакансий из JSON файла
-    with open('data/vacancies.json', 'r', encoding='utf-8') as f:
-        vacancies = json.load(f)
-
-    # Чтение навыков из JSON файла
-    with open('data/skills.json', 'r', encoding='utf-8') as f:
-        skills = json.load(f)
+    # Выборка данных из базы данных
+    vacancies = Vacancy.query.all()
+    skills = Skill.query.all()
 
     # Отправка данных в шаблон
     return render_template('results.html', vacancies=vacancies, skills=skills)
@@ -150,4 +123,7 @@ def contact():
     return render_template('contact.html')
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Создаем таблицы, если их нет
+        print_database_data()  # Печатаем данные из базы в консоль
     app.run(debug=True)

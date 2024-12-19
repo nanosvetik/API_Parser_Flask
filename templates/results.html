@@ -20,9 +20,9 @@
                 {% for vacancy in vacancies %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th> <!-- Индекс вакансии -->
-                    <td>{{ vacancy['name'] }}</td> <!-- Название вакансии -->
-                    <td>{{ vacancy['snippet'] }}</td> <!-- Описание вакансии -->
-                    <td><a href="{{ vacancy['url'] }}" target="_blank">Перейти</a></td> <!-- Ссылка на вакансию -->
+                    <td>{{ vacancy.title }}</td> <!-- Название вакансии -->
+                    <td>{{ vacancy.description }}</td> <!-- Описание вакансии -->
+                    <td><a href="{{ vacancy.url }}" target="_blank">Перейти</a></td> <!-- Ссылка на вакансию -->
                 </tr>
                 {% endfor %}
             </tbody>
@@ -43,7 +43,7 @@
                 {% for skill in skills %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th> <!-- Индекс навыка -->
-                    <td>{{ skill['skill'] }}</td> <!-- Название навыка -->
+                    <td>{{ skill.name }}</td> <!-- Название навыка -->
                 </tr>
                 {% endfor %}
             </tbody>
